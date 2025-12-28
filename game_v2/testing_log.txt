@@ -1,0 +1,943 @@
+===============================================================================
+EVOLUTION TESTING LOG - Game V2 Continuous Genetics
+===============================================================================
+
+TEST RUN #1
+Parameters: BASE_SPREAD_CHANCE=0.15, BASE_DEATH_CHANCE=0.008, BASE_CROWDED_DEATH_CHANCE=0.2
+Resilience: -70% death, -100% crowding death
+
+Result: FAILED - Population explosion
+- Tick 100: 3431 trees
+- Evolution: G:0.38 R:0.82 Res:0.81
+- Simulation stalled due to O(n²) on 3000+ trees
+
+---
+
+TEST RUN #2
+Parameters: BASE_SPREAD_CHANCE=0.10, BASE_DEATH_CHANCE=0.012, BASE_CROWDED_DEATH_CHANCE=0.35
+Resilience: -70% death, -100% crowding death
+
+Result: FAILED - Exponential growth
+- Tick 100: 357 trees → Tick 200: 10,632 trees
+- Evolution: G:0.40→0.63 R:0.68→0.84 Res:0.68→0.96
+- Resilience too strong, evolved to 0.96 = invincible
+
+---
+
+TEST RUN #3 ✅ SUCCESS
+Parameters: BASE_SPREAD_CHANCE=0.10, BASE_DEATH_CHANCE=0.012, BASE_CROWDED_DEATH_CHANCE=0.35
+Resilience: -40% death, -60% crowding death (NERFED)
+
+Result: STABLE POPULATION! 🎉
+- Final: 336 trees (started with 40)
+- Population range: 40-343 trees
+- Stability: ✅ Last quarter avg = 325 ± 21 trees
+- Completed all 1000 ticks smoothly
+
+Evolution trajectory:
+- Growth Rate: 0.488 → 0.073 (-0.416) ⚠️  CRASHED
+- Reproduction: 0.482 → 0.884 (+0.402) ⬆️  MAXED OUT
+- Resilience: 0.456 → 0.837 (+0.381) ⬆️  HIGH
+
+Analysis:
+✅ Population control works! Stays under 350 trees
+✅ Natural selection is working - clear evolutionary pressure
+⚠️  Growth rate evolution is concerning:
+   - Trees evolved to nearly zero growth (0.07)
+   - This makes sense: with crowding death at 35%, staying small is safe
+   - But gameplay-wise, tiny invisible trees aren't fun
+   - Growth penalty from resilience (-20%) compounds the problem
+
+Evolutionary strategy that emerged:
+"Slow-growing, hardy, prolific breeders"
+- Low growth (0.07) = stay small, avoid crowding
+- High reproduction (0.88) = spam offspring
+- High resilience (0.84) = survive everything
+
+🔍 ROOT PROBLEM IDENTIFIED:
+Growth rate has NO BENEFITS, only costs:
+- Large trees get crowded more (vulnerability increases)
+- Large trees don't reproduce better
+- Large trees don't survive better
+- Result: Evolution always favors staying small
+
+MECHANICAL FIXES TO TEST:
+A. Size-gated reproduction: Must reach threshold size to reproduce
+B. Size-based dominance: Large trees crowd small trees but not vice versa
+C. Growth rate affects spread distance: Faster growers spread further
+D. Combination of above
+
+---
+
+TESTING MECHANICAL CHANGES...
+
+
+============================================================
+📊 SIMULATION ANALYSIS - 2025-12-11T01:21:23.289Z
+============================================================
+
+🌱 Initial Population: 40
+🌳 Final Population: 259
+📈 Change: 547.5%
+📊 Population Range: 40 - 287 trees
+
+🧬 Final Average Characteristics:
+   Growth Rate: 0.053 (range: 0.00-0.25)
+   Reproduction: 0.872 (range: 0.13-1.00)
+   Resilience: 0.561 (range: 0.13-0.99)
+
+🔄 Evolution from start:
+   Growth Rate: 0.479 → 0.053 (-0.426)
+   Reproduction: 0.576 → 0.872 (+0.296)
+   Resilience: 0.504 → 0.561 (+0.058)
+
+⚖️  Population Stability: ✅ STABLE
+   Last quarter average: 270 ± 12 trees
+
+============================================================
+
+
+============================================================
+📊 SIMULATION ANALYSIS - 2025-12-11T01:21:50.160Z
+============================================================
+
+🌱 Initial Population: 40
+🌳 Final Population: 959
+📈 Change: 2297.5%
+📊 Population Range: 40 - 959 trees
+
+🧬 Final Average Characteristics:
+   Growth Rate: 0.008 (range: 0.00-0.31)
+   Reproduction: 0.873 (range: 0.44-1.00)
+   Resilience: 0.402 (range: 0.00-0.92)
+
+🔄 Evolution from start:
+   Growth Rate: 0.521 → 0.008 (-0.513)
+   Reproduction: 0.529 → 0.873 (+0.344)
+   Resilience: 0.426 → 0.402 (-0.023)
+
+⚖️  Population Stability: ✅ STABLE
+   Last quarter average: 952 ± 10 trees
+
+============================================================
+
+
+============================================================
+📊 SIMULATION ANALYSIS - 2025-12-11T01:22:12.208Z
+============================================================
+
+🌱 Initial Population: 40
+🌳 Final Population: 1142
+📈 Change: 2755.0%
+📊 Population Range: 40 - 1142 trees
+
+🧬 Final Average Characteristics:
+   Growth Rate: 0.009 (range: 0.00-0.09)
+   Reproduction: 0.778 (range: 0.19-1.00)
+   Resilience: 0.844 (range: 0.39-1.00)
+
+🔄 Evolution from start:
+   Growth Rate: 0.471 → 0.009 (-0.462)
+   Reproduction: 0.470 → 0.778 (+0.308)
+   Resilience: 0.528 → 0.844 (+0.315)
+
+⚖️  Population Stability: ✅ STABLE
+   Last quarter average: 1129 ± 13 trees
+
+============================================================
+
+
+============================================================
+📊 SIMULATION ANALYSIS - 2025-12-11T01:22:33.069Z
+============================================================
+
+🌱 Initial Population: 40
+🌳 Final Population: 254
+📈 Change: 535.0%
+📊 Population Range: 40 - 254 trees
+
+🧬 Final Average Characteristics:
+   Growth Rate: 0.412 (range: 0.26-0.62)
+   Reproduction: 0.382 (range: 0.00-0.88)
+   Resilience: 0.690 (range: 0.31-1.00)
+
+🔄 Evolution from start:
+   Growth Rate: 0.513 → 0.412 (-0.101)
+   Reproduction: 0.558 → 0.382 (-0.176)
+   Resilience: 0.502 → 0.690 (+0.187)
+
+⚖️  Population Stability: ✅ STABLE
+   Last quarter average: 232 ± 16 trees
+
+============================================================
+
+
+===============================================================================
+TEST RUN #4 ✅ BREAKTHROUGH SUCCESS!
+===============================================================================
+Mechanics: ABSOLUTE size threshold (7.5) + spread distance scales with growth
+Parameters: Resilience -40% death, -60% crowding, -50% growth
+
+Result: BALANCED EVOLUTION! 🎉
+- Growth: 0.513 → 0.412 ✅ MAINTAINED!
+- Reproduction: 0.558 → 0.382 ⬇️  DECREASED!
+- Resilience: 0.502 → 0.690 ⬆️  MODERATE
+- Population: 254 trees (stable 232±16)
+
+WHY IT WORKS:
+Absolute size threshold means low-growth trees CANNOT reproduce!
+- Growth 0.3 → max 4.5 → never reaches 7.5
+- Growth 0.6 → max 9.0 → can reproduce
+Creates real three-way tradeoff we wanted!
+
+
+============================================================
+📊 SIMULATION ANALYSIS - 2025-12-11T01:35:33.366Z
+============================================================
+
+🌱 Initial Population: 40
+🌳 Final Population: 227
+📈 Change: 467.5%
+📊 Population Range: 40 - 249 trees
+
+🧬 Final Average Characteristics:
+   Growth Rate: 0.399 (range: 0.27-0.55)
+   Reproduction: 0.368 (range: 0.02-0.67)
+   Resilience: 0.619 (range: 0.36-0.88)
+
+🔄 Evolution from start:
+   Growth Rate: 0.491 → 0.399 (-0.092)
+   Reproduction: 0.523 → 0.368 (-0.155)
+   Resilience: 0.510 → 0.619 (+0.109)
+
+⚖️  Population Stability: ✅ STABLE
+   Last quarter average: 239 ± 9 trees
+
+============================================================
+
+
+============================================================
+📊 SIMULATION ANALYSIS - 2025-12-11T01:42:00.191Z
+============================================================
+
+🌱 Initial Population: 40
+🌳 Final Population: 221
+📈 Change: 452.5%
+📊 Population Range: 40 - 221 trees
+
+🧬 Final Average Characteristics:
+   Growth Rate: 0.480 (range: 0.20-0.76)
+   Reproduction: 0.396 (range: 0.00-1.00)
+   Resilience: 0.407 (range: 0.03-1.00)
+
+🔄 Evolution from start:
+   Growth Rate: 0.497 → 0.480 (-0.017)
+   Reproduction: 0.541 → 0.396 (-0.144)
+   Resilience: 0.516 → 0.407 (-0.108)
+
+⚖️  Population Stability: ✅ STABLE
+   Last quarter average: 204 ± 14 trees
+
+============================================================
+
+
+============================================================
+📊 SIMULATION ANALYSIS - 2025-12-11T01:42:22.730Z
+============================================================
+
+🌱 Initial Population: 40
+🌳 Final Population: 169
+📈 Change: 322.5%
+📊 Population Range: 40 - 173 trees
+
+🧬 Final Average Characteristics:
+   Growth Rate: 0.465 (range: 0.32-0.83)
+   Reproduction: 0.368 (range: 0.00-0.93)
+   Resilience: 0.494 (range: 0.09-0.96)
+
+🔄 Evolution from start:
+   Growth Rate: 0.524 → 0.465 (-0.059)
+   Reproduction: 0.549 → 0.368 (-0.181)
+   Resilience: 0.537 → 0.494 (-0.043)
+
+⚖️  Population Stability: ✅ STABLE
+   Last quarter average: 167 ± 3 trees
+
+============================================================
+
+
+===============================================================================
+CO-EVOLUTIONARY DYNAMICS TEST - DEER + TREES
+===============================================================================
+
+DEER CHARACTERISTICS (0-1):
+- Speed: Movement distance (cost: higher death)
+- Appetite: Eating rate (cost: starvation if unfed)
+- Reach: Max tree size eatable (cost: slower metabolism)
+
+RESULT: ✅ STABLE CO-EXISTENCE!
+- Deer population: ~12 (stable 11-14)
+- Tree population: ~169 (down from ~220 without deer)
+- Tree diversity INCREASED:
+  - Growth: 0.32-0.83 (was 0.27-0.55 without deer)
+  - Reproduction: 0.00-0.93 (was 0.02-0.67)
+  - Resilience: 0.09-0.96 (was 0.36-0.88)
+
+HETEROGENEOUS SELECTION PRESSURE WORKING!
+Deer create dynamic, spatial selection zones. Trees must adapt locally to:
+- Escape deer reach (grow fast)
+- Survive grazing pressure (high resilience)
+- Reproduce before being eaten (variable strategies)
+
+This creates NICHE DIVERSITY we wanted! 🎉
+
+
+============================================================
+📊 SIMULATION ANALYSIS - 2025-12-25T19:38:25.144Z
+============================================================
+
+🌱 Initial Population: 200
+🌳 Final Population: 13100
+📈 Change: 6450.0%
+📊 Population Range: 200 - 13100 trees
+
+🧬 Final Average Characteristics:
+   Growth Rate: 0.501 (range: 0.00-1.00)
+   Reproduction: 0.894 (range: 0.16-1.00)
+   Resilience: 0.967 (range: 0.46-1.00)
+
+🔄 Evolution from start:
+   Growth Rate: 0.510 → 0.501 (-0.009)
+   Reproduction: 0.498 → 0.894 (+0.397)
+   Resilience: 0.507 → 0.967 (+0.460)
+
+⚖️  Population Stability: ❌ UNSTABLE
+   Last quarter average: 11072 ± 1299 trees
+
+============================================================
+
+
+============================================================
+📊 SIMULATION ANALYSIS - 2025-12-25T19:39:16.996Z
+============================================================
+
+🌱 Initial Population: 200
+🌳 Final Population: 4597
+📈 Change: 2198.5%
+📊 Population Range: 200 - 4597 trees
+
+🧬 Final Average Characteristics:
+   Growth Rate: 0.455 (range: 0.00-1.00)
+   Reproduction: 0.837 (range: 0.00-1.00)
+   Resilience: 0.932 (range: 0.23-1.00)
+
+🔄 Evolution from start:
+   Growth Rate: 0.498 → 0.455 (-0.043)
+   Reproduction: 0.519 → 0.837 (+0.318)
+   Resilience: 0.458 → 0.932 (+0.474)
+
+⚖️  Population Stability: ❌ UNSTABLE
+   Last quarter average: 3643 ± 525 trees
+
+============================================================
+
+
+============================================================
+📊 SIMULATION ANALYSIS - 2025-12-25T19:56:45.266Z
+============================================================
+
+🌱 Initial Population: 300
+🌳 Final Population: 16456
+📈 Change: 5385.3%
+📊 Population Range: 300 - 16456 trees
+
+🧬 Final Average Characteristics:
+   Growth Rate: 0.481 (range: 0.00-1.00)
+   Reproduction: 0.914 (range: 0.24-1.00)
+   Resilience: 0.969 (range: 0.68-1.00)
+
+🔄 Evolution from start:
+   Growth Rate: 0.506 → 0.481 (-0.026)
+   Reproduction: 0.477 → 0.914 (+0.437)
+   Resilience: 0.498 → 0.969 (+0.471)
+
+⚖️  Population Stability: ❌ UNSTABLE
+   Last quarter average: 11566 ± 2930 trees
+
+============================================================
+
+
+============================================================
+📊 SIMULATION ANALYSIS - 2025-12-25T20:00:47.464Z
+============================================================
+
+🌱 Initial Population: 200
+🌳 Final Population: 58714
+📈 Change: 29257.0%
+📊 Population Range: 200 - 58714 trees
+
+🧬 Final Average Characteristics:
+   Growth Rate: 0.235 (range: 0.00-0.90)
+   Reproduction: 0.937 (range: 0.40-1.00)
+   Resilience: 0.972 (range: 0.75-1.00)
+
+🔄 Evolution from start:
+   Growth Rate: 0.520 → 0.235 (-0.285)
+   Reproduction: 0.477 → 0.937 (+0.459)
+   Resilience: 0.502 → 0.972 (+0.471)
+
+⚖️  Population Stability: ❌ UNSTABLE
+   Last quarter average: 28845 ± 16271 trees
+
+============================================================
+
+
+============================================================
+📊 SIMULATION ANALYSIS - 2025-12-25T20:03:48.208Z
+============================================================
+
+🌱 Initial Population: 500
+🌳 Final Population: 2885
+📈 Change: 477.0%
+📊 Population Range: 500 - 4471 trees
+
+🧬 Final Average Characteristics:
+   Growth Rate: 0.447 (range: 0.00-1.00)
+   Reproduction: 0.858 (range: 0.29-1.00)
+   Resilience: 0.963 (range: 0.73-1.00)
+
+🔄 Evolution from start:
+   Growth Rate: 0.485 → 0.447 (-0.038)
+   Reproduction: 0.502 → 0.858 (+0.356)
+   Resilience: 0.517 → 0.963 (+0.447)
+
+⚖️  Population Stability: ✅ STABLE
+   Last quarter average: 2915 ± 148 trees
+
+============================================================
+
+
+============================================================
+📊 SIMULATION ANALYSIS - 2025-12-25T20:04:31.260Z
+============================================================
+
+🌱 Initial Population: 500
+🌳 Final Population: 2412
+📈 Change: 382.4%
+📊 Population Range: 500 - 4093 trees
+
+🧬 Final Average Characteristics:
+   Growth Rate: 0.495 (range: 0.00-0.99)
+   Reproduction: 0.900 (range: 0.20-1.00)
+   Resilience: 0.962 (range: 0.72-1.00)
+
+🔄 Evolution from start:
+   Growth Rate: 0.479 → 0.495 (+0.016)
+   Reproduction: 0.487 → 0.900 (+0.413)
+   Resilience: 0.488 → 0.962 (+0.474)
+
+⚖️  Population Stability: ✅ STABLE
+   Last quarter average: 2464 ± 83 trees
+
+============================================================
+
+
+============================================================
+📊 SIMULATION ANALYSIS - 2025-12-25T20:05:44.155Z
+============================================================
+
+🌱 Initial Population: 500
+🌳 Final Population: 15089
+📈 Change: 2917.8%
+📊 Population Range: 500 - 15089 trees
+
+🧬 Final Average Characteristics:
+   Growth Rate: 0.411 (range: 0.00-0.98)
+   Reproduction: 0.894 (range: 0.19-1.00)
+   Resilience: 0.968 (range: 0.46-1.00)
+
+🔄 Evolution from start:
+   Growth Rate: 0.502 → 0.411 (-0.090)
+   Reproduction: 0.507 → 0.894 (+0.387)
+   Resilience: 0.520 → 0.968 (+0.448)
+
+⚖️  Population Stability: ❌ UNSTABLE
+   Last quarter average: 11391 ± 2093 trees
+
+============================================================
+
+
+============================================================
+📊 SIMULATION ANALYSIS - 2025-12-25T20:13:12.875Z
+============================================================
+
+🌱 Initial Population: 500
+🌳 Final Population: 2277
+📈 Change: 355.4%
+📊 Population Range: 500 - 3297 trees
+
+🧬 Final Average Characteristics:
+   Growth Rate: 0.505 (range: 0.01-0.99)
+   Reproduction: 0.888 (range: 0.33-1.00)
+   Resilience: 0.960 (range: 0.75-1.00)
+
+🔄 Evolution from start:
+   Growth Rate: 0.488 → 0.505 (+0.016)
+   Reproduction: 0.531 → 0.888 (+0.357)
+   Resilience: 0.506 → 0.960 (+0.454)
+
+⚖️  Population Stability: ✅ STABLE
+   Last quarter average: 2440 ± 82 trees
+
+============================================================
+
+
+============================================================
+📊 SIMULATION ANALYSIS - 2025-12-25T20:14:49.546Z
+============================================================
+
+🌱 Initial Population: 500
+🌳 Final Population: 46467
+📈 Change: 9193.4%
+📊 Population Range: 500 - 46467 trees
+
+🧬 Final Average Characteristics:
+   Growth Rate: 0.253 (range: 0.00-1.00)
+   Reproduction: 0.932 (range: 0.20-1.00)
+   Resilience: 0.972 (range: 0.72-1.00)
+
+🔄 Evolution from start:
+   Growth Rate: 0.496 → 0.253 (-0.243)
+   Reproduction: 0.496 → 0.932 (+0.436)
+   Resilience: 0.512 → 0.972 (+0.460)
+
+⚖️  Population Stability: ❌ UNSTABLE
+   Last quarter average: 27152 ± 10945 trees
+
+============================================================
+
+
+============================================================
+📊 SIMULATION ANALYSIS - 2025-12-25T20:16:13.639Z
+============================================================
+
+🌱 Initial Population: 500
+🌳 Final Population: 2419
+📈 Change: 383.8%
+📊 Population Range: 500 - 2528 trees
+
+🧬 Final Average Characteristics:
+   Growth Rate: 0.499 (range: 0.00-1.00)
+   Reproduction: 0.892 (range: 0.40-1.00)
+   Resilience: 0.961 (range: 0.74-1.00)
+
+🔄 Evolution from start:
+   Growth Rate: 0.500 → 0.499 (-0.001)
+   Reproduction: 0.483 → 0.892 (+0.409)
+   Resilience: 0.512 → 0.961 (+0.449)
+
+⚖️  Population Stability: ✅ STABLE
+   Last quarter average: 2399 ± 75 trees
+
+============================================================
+
+
+============================================================
+📊 SIMULATION ANALYSIS - 2025-12-25T20:16:34.619Z
+============================================================
+
+🌱 Initial Population: 500
+🌳 Final Population: 2551
+📈 Change: 410.2%
+📊 Population Range: 500 - 2551 trees
+
+🧬 Final Average Characteristics:
+   Growth Rate: 0.464 (range: 0.01-0.91)
+   Reproduction: 0.906 (range: 0.34-1.00)
+   Resilience: 0.965 (range: 0.80-1.00)
+
+🔄 Evolution from start:
+   Growth Rate: 0.483 → 0.464 (-0.019)
+   Reproduction: 0.484 → 0.906 (+0.422)
+   Resilience: 0.480 → 0.965 (+0.485)
+
+⚖️  Population Stability: ✅ STABLE
+   Last quarter average: 2482 ± 63 trees
+
+============================================================
+
+
+============================================================
+📊 SIMULATION ANALYSIS - 2025-12-25T20:17:43.786Z
+============================================================
+
+🌱 Initial Population: 500
+🌳 Final Population: 2296
+📈 Change: 359.2%
+📊 Population Range: 500 - 2397 trees
+
+🧬 Final Average Characteristics:
+   Growth Rate: 0.517 (range: 0.00-0.94)
+   Reproduction: 0.914 (range: 0.37-1.00)
+   Resilience: 0.966 (range: 0.76-1.00)
+
+🔄 Evolution from start:
+   Growth Rate: 0.480 → 0.517 (+0.036)
+   Reproduction: 0.490 → 0.914 (+0.424)
+   Resilience: 0.502 → 0.966 (+0.464)
+
+⚖️  Population Stability: ✅ STABLE
+   Last quarter average: 2312 ± 49 trees
+
+============================================================
+
+
+============================================================
+📊 SIMULATION ANALYSIS - 2025-12-25T20:20:54.459Z
+============================================================
+
+🌱 Initial Population: 500
+🌳 Final Population: 2274
+📈 Change: 354.8%
+📊 Population Range: 389 - 2397 trees
+
+🧬 Final Average Characteristics:
+   Growth Rate: 0.498 (range: 0.06-0.86)
+   Reproduction: 0.893 (range: 0.49-1.00)
+   Resilience: 0.964 (range: 0.68-1.00)
+
+🔄 Evolution from start:
+   Growth Rate: 0.482 → 0.498 (+0.016)
+   Reproduction: 0.494 → 0.893 (+0.398)
+   Resilience: 0.467 → 0.964 (+0.497)
+
+⚖️  Population Stability: ✅ STABLE
+   Last quarter average: 2329 ± 48 trees
+
+============================================================
+
+
+============================================================
+📊 SIMULATION ANALYSIS - 2025-12-25T20:21:24.352Z
+============================================================
+
+🌱 Initial Population: 500
+🌳 Final Population: 2419
+📈 Change: 383.8%
+📊 Population Range: 486 - 2419 trees
+
+🧬 Final Average Characteristics:
+   Growth Rate: 0.519 (range: 0.05-0.94)
+   Reproduction: 0.922 (range: 0.12-1.00)
+   Resilience: 0.966 (range: 0.73-1.00)
+
+🔄 Evolution from start:
+   Growth Rate: 0.500 → 0.519 (+0.019)
+   Reproduction: 0.501 → 0.922 (+0.421)
+   Resilience: 0.488 → 0.966 (+0.477)
+
+⚖️  Population Stability: ✅ STABLE
+   Last quarter average: 2326 ± 48 trees
+
+============================================================
+
+
+============================================================
+📊 SIMULATION ANALYSIS - 2025-12-25T20:21:50.225Z
+============================================================
+
+🌱 Initial Population: 500
+🌳 Final Population: 2355
+📈 Change: 371.0%
+📊 Population Range: 490 - 2418 trees
+
+🧬 Final Average Characteristics:
+   Growth Rate: 0.530 (range: 0.04-1.00)
+   Reproduction: 0.885 (range: 0.36-1.00)
+   Resilience: 0.963 (range: 0.54-1.00)
+
+🔄 Evolution from start:
+   Growth Rate: 0.494 → 0.530 (+0.035)
+   Reproduction: 0.483 → 0.885 (+0.402)
+   Resilience: 0.493 → 0.963 (+0.470)
+
+⚖️  Population Stability: ✅ STABLE
+   Last quarter average: 2378 ± 25 trees
+
+============================================================
+
+
+============================================================
+📊 SIMULATION ANALYSIS - 2025-12-25T20:22:16.959Z
+============================================================
+
+🌱 Initial Population: 500
+🌳 Final Population: 2003
+📈 Change: 300.6%
+📊 Population Range: 500 - 2381 trees
+
+🧬 Final Average Characteristics:
+   Growth Rate: 0.497 (range: 0.00-0.93)
+   Reproduction: 0.911 (range: 0.48-1.00)
+   Resilience: 0.964 (range: 0.73-1.00)
+
+🔄 Evolution from start:
+   Growth Rate: 0.491 → 0.497 (+0.006)
+   Reproduction: 0.489 → 0.911 (+0.422)
+   Resilience: 0.510 → 0.964 (+0.454)
+
+⚖️  Population Stability: ✅ STABLE
+   Last quarter average: 2035 ± 45 trees
+
+============================================================
+
+
+============================================================
+📊 SIMULATION ANALYSIS - 2025-12-25T20:24:40.959Z
+============================================================
+
+🌱 Initial Population: 500
+🌳 Final Population: 2329
+📈 Change: 365.8%
+📊 Population Range: 500 - 2329 trees
+
+🧬 Final Average Characteristics:
+   Growth Rate: 0.516 (range: 0.00-0.88)
+   Reproduction: 0.913 (range: 0.61-1.00)
+   Resilience: 0.963 (range: 0.75-1.00)
+
+🔄 Evolution from start:
+   Growth Rate: 0.489 → 0.516 (+0.026)
+   Reproduction: 0.495 → 0.913 (+0.417)
+   Resilience: 0.492 → 0.963 (+0.471)
+
+⚖️  Population Stability: ✅ STABLE
+   Last quarter average: 2250 ± 59 trees
+
+============================================================
+
+
+============================================================
+📊 SIMULATION ANALYSIS - 2025-12-25T20:25:29.216Z
+============================================================
+
+🌱 Initial Population: 500
+🌳 Final Population: 2381
+📈 Change: 376.2%
+📊 Population Range: 500 - 2546 trees
+
+🧬 Final Average Characteristics:
+   Growth Rate: 0.520 (range: 0.00-0.90)
+   Reproduction: 0.918 (range: 0.50-1.00)
+   Resilience: 0.966 (range: 0.78-1.00)
+
+🔄 Evolution from start:
+   Growth Rate: 0.484 → 0.520 (+0.036)
+   Reproduction: 0.506 → 0.918 (+0.412)
+   Resilience: 0.481 → 0.966 (+0.485)
+
+⚖️  Population Stability: ✅ STABLE
+   Last quarter average: 2415 ± 30 trees
+
+============================================================
+
+
+============================================================
+📊 SIMULATION ANALYSIS - 2025-12-25T20:27:09.231Z
+============================================================
+
+🌱 Initial Population: 500
+🌳 Final Population: 2415
+📈 Change: 383.0%
+📊 Population Range: 500 - 2449 trees
+
+🧬 Final Average Characteristics:
+   Growth Rate: 0.521 (range: 0.05-0.97)
+   Reproduction: 0.913 (range: 0.44-1.00)
+   Resilience: 0.967 (range: 0.77-1.00)
+
+🔄 Evolution from start:
+   Growth Rate: 0.509 → 0.521 (+0.012)
+   Reproduction: 0.485 → 0.913 (+0.428)
+   Resilience: 0.503 → 0.967 (+0.464)
+
+⚖️  Population Stability: ✅ STABLE
+   Last quarter average: 2405 ± 35 trees
+
+============================================================
+
+
+============================================================
+📊 SIMULATION ANALYSIS - 2025-12-25T20:27:37.572Z
+============================================================
+
+🌱 Initial Population: 500
+🌳 Final Population: 2053
+📈 Change: 310.6%
+📊 Population Range: 484 - 2273 trees
+
+🧬 Final Average Characteristics:
+   Growth Rate: 0.528 (range: 0.00-0.87)
+   Reproduction: 0.921 (range: 0.49-1.00)
+   Resilience: 0.966 (range: 0.73-1.00)
+
+🔄 Evolution from start:
+   Growth Rate: 0.508 → 0.528 (+0.020)
+   Reproduction: 0.482 → 0.921 (+0.439)
+   Resilience: 0.509 → 0.966 (+0.458)
+
+⚖️  Population Stability: ✅ STABLE
+   Last quarter average: 2108 ± 79 trees
+
+============================================================
+
+
+============================================================
+📊 SIMULATION ANALYSIS - 2025-12-25T20:27:57.027Z
+============================================================
+
+🌱 Initial Population: 500
+🌳 Final Population: 2518
+📈 Change: 403.6%
+📊 Population Range: 500 - 2518 trees
+
+🧬 Final Average Characteristics:
+   Growth Rate: 0.519 (range: 0.10-0.94)
+   Reproduction: 0.925 (range: 0.45-1.00)
+   Resilience: 0.965 (range: 0.75-1.00)
+
+🔄 Evolution from start:
+   Growth Rate: 0.496 → 0.519 (+0.023)
+   Reproduction: 0.501 → 0.925 (+0.423)
+   Resilience: 0.501 → 0.965 (+0.464)
+
+⚖️  Population Stability: ✅ STABLE
+   Last quarter average: 2437 ± 53 trees
+
+============================================================
+
+
+============================================================
+📊 SIMULATION ANALYSIS - 2025-12-25T20:28:39.230Z
+============================================================
+
+🌱 Initial Population: 500
+🌳 Final Population: 2371
+📈 Change: 374.2%
+📊 Population Range: 500 - 2545 trees
+
+🧬 Final Average Characteristics:
+   Growth Rate: 0.529 (range: 0.00-0.91)
+   Reproduction: 0.919 (range: 0.48-1.00)
+   Resilience: 0.965 (range: 0.79-1.00)
+
+🔄 Evolution from start:
+   Growth Rate: 0.506 → 0.529 (+0.022)
+   Reproduction: 0.506 → 0.919 (+0.413)
+   Resilience: 0.512 → 0.965 (+0.453)
+
+⚖️  Population Stability: ✅ STABLE
+   Last quarter average: 2469 ± 62 trees
+
+============================================================
+
+
+============================================================
+📊 SIMULATION ANALYSIS - 2025-12-25T20:29:28.565Z
+============================================================
+
+🌱 Initial Population: 500
+🌳 Final Population: 2429
+📈 Change: 385.8%
+📊 Population Range: 500 - 2472 trees
+
+🧬 Final Average Characteristics:
+   Growth Rate: 0.483 (range: 0.00-0.92)
+   Reproduction: 0.929 (range: 0.60-1.00)
+   Resilience: 0.967 (range: 0.75-1.00)
+
+🔄 Evolution from start:
+   Growth Rate: 0.513 → 0.483 (-0.030)
+   Reproduction: 0.502 → 0.929 (+0.427)
+   Resilience: 0.497 → 0.967 (+0.470)
+
+⚖️  Population Stability: ✅ STABLE
+   Last quarter average: 2413 ± 15 trees
+
+============================================================
+
+
+============================================================
+📊 SIMULATION ANALYSIS - 2025-12-25T20:29:57.117Z
+============================================================
+
+🌱 Initial Population: 500
+🌳 Final Population: 2358
+📈 Change: 371.6%
+📊 Population Range: 500 - 2511 trees
+
+🧬 Final Average Characteristics:
+   Growth Rate: 0.490 (range: 0.01-0.99)
+   Reproduction: 0.909 (range: 0.51-1.00)
+   Resilience: 0.966 (range: 0.80-1.00)
+
+🔄 Evolution from start:
+   Growth Rate: 0.495 → 0.490 (-0.005)
+   Reproduction: 0.520 → 0.909 (+0.389)
+   Resilience: 0.530 → 0.966 (+0.436)
+
+⚖️  Population Stability: ✅ STABLE
+   Last quarter average: 2398 ± 69 trees
+
+============================================================
+
+
+============================================================
+📊 SIMULATION ANALYSIS - 2025-12-25T20:31:14.934Z
+============================================================
+
+🌱 Initial Population: 500
+🌳 Final Population: 2453
+📈 Change: 390.6%
+📊 Population Range: 500 - 2499 trees
+
+🧬 Final Average Characteristics:
+   Growth Rate: 0.499 (range: 0.06-0.90)
+   Reproduction: 0.906 (range: 0.46-1.00)
+   Resilience: 0.966 (range: 0.78-1.00)
+
+🔄 Evolution from start:
+   Growth Rate: 0.508 → 0.499 (-0.009)
+   Reproduction: 0.513 → 0.906 (+0.394)
+   Resilience: 0.497 → 0.966 (+0.468)
+
+⚖️  Population Stability: ✅ STABLE
+   Last quarter average: 2457 ± 56 trees
+
+============================================================
+
+
+============================================================
+📊 SIMULATION ANALYSIS - 2025-12-25T20:31:38.976Z
+============================================================
+
+🌱 Initial Population: 500
+🌳 Final Population: 2329
+📈 Change: 365.8%
+📊 Population Range: 500 - 2526 trees
+
+🧬 Final Average Characteristics:
+   Growth Rate: 0.491 (range: 0.00-0.93)
+   Reproduction: 0.910 (range: 0.56-1.00)
+   Resilience: 0.964 (range: 0.77-1.00)
+
+🔄 Evolution from start:
+   Growth Rate: 0.488 → 0.491 (+0.003)
+   Reproduction: 0.495 → 0.910 (+0.415)
+   Resilience: 0.516 → 0.964 (+0.449)
+
+⚖️  Population Stability: ✅ STABLE
+   Last quarter average: 2394 ± 33 trees
+
+============================================================
+

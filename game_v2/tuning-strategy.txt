@@ -1,0 +1,309 @@
+# Tuning Strategy: Achieving Stable Oscillations and Diversity
+
+## Current Problems
+
+1. **No Stable Oscillations**
+   - Populations crash to extinction or explode
+   - No smooth predator-prey cycles
+   - System is too chaotic/sensitive
+
+2. **Genetic Convergence**
+   - All deer clusters evolve to identical characteristics
+   - No maintained diversity
+   - Suggests single optimal strategy dominates
+
+3. **Brittleness**
+   - Small parameter changes cause collapse
+   - Difficult to find stable parameter space
+
+## Root Cause Analysis
+
+### Why No Oscillations?
+
+**Classic Lotka-Volterra requires:**
+- Prey growth rate > predator death rate (when predators low)
+- Predator kill rate responsive to prey density
+- Time lags in responses
+
+**Our system has:**
+- ✅ Deer seek trees (responsive to prey density)
+- ✅ Time lags (age requirements, growth rates)
+- ❌ Tree growth too slow relative to deer consumption
+- ❌ Deer reproduction too tightly coupled to food availability
+- ❌ No spatial refuges working effectively
+
+### Why Genetic Convergence?
+
+**Diversity requires:**
+- Multiple viable strategies (niches)
+- Trade-offs between traits
+- Spatial/temporal heterogeneity
+
+**Our deer have:**
+- Speed, Appetite, Reach traits
+- But all three traits seem to benefit from being HIGH
+- No clear trade-offs (high speed doesn't cost much)
+- Terrain doesn't create strong niches yet
+
+## Strategy Options
+
+### Option A: Tune Constants (Low Risk, Moderate Reward)
+
+**Approach:** Adjust rates until oscillations emerge
+
+**Key Ratios to Target:**
+```
+Tree growth rate : Deer consumption rate ≈ 1.5:1
+  (trees should outgrow deer when deer are sparse)
+
+Deer reproduction rate : Deer death rate ≈ 2:1 when well-fed
+  (allows slow growth, not explosion)
+
+Tree spread rate : Tree death rate ≈ 3:1 at low density
+  (rapid recovery from crashes)
+```
+
+**Specific Tuning Steps:**
+1. **Increase BASE_SPREAD_CHANCE** from 0.10 to 0.20
+   - Doubles tree reproduction rate
+   - Helps trees recover from deer predation
+
+2. **Reduce DEER_STARVATION_PENALTY** from 0.003 to 0.001
+   - Deer survive longer when food scarce
+   - Smoother population decline
+
+3. **Increase BASE_DEER_REPRODUCE_AGE** from 10 to 15
+   - Slows deer population growth
+   - Gives trees more time to establish
+
+4. **Add minimum tree reproduction at low density**
+   - Below 50 trees: double spread chance
+   - Prevents extinction spirals
+
+**Pros:**
+- Simple, quick to test
+- No new mechanics to debug
+- Preserves current design
+
+**Cons:**
+- May still be fragile
+- Doesn't solve genetic convergence
+- Lots of trial-and-error
+
+### Option B: Add Wolves (High Risk, High Reward)
+
+**Concept:** Third trophic level controls deer, creates more complex dynamics
+
+**Implementation:**
+```
+Wolves:
+- Hunt deer (can catch deer with low speed)
+- Reproduce when well-fed on deer
+- Die when deer scarce
+```
+
+**Benefits:**
+- Could stabilize deer population (top-down control)
+- Creates selection pressure for FAST deer (escape predation)
+- Adds visual/conceptual richness
+
+**Risks:**
+- Three-body problem is MUCH harder to stabilize
+- More parameters to tune (exponentially harder)
+- Could make system more chaotic, not less
+- Genetic convergence in wolves too?
+
+**Verdict:** NOT RECOMMENDED yet. Fix two-species system first.
+
+### Option C: Strengthen Trade-offs (Medium Risk, High Reward)
+
+**Problem:** All deer traits want to be high - no real choices
+
+**Solutions:**
+
+1. **Make Speed Costly**
+   ```typescript
+   // High speed = higher energy consumption
+   deer.energy -= 0.05 * deer.characteristics.speed
+
+   // Creates trade-off: fast deer catch food better but burn energy faster
+   ```
+
+2. **Make Appetite a Double-Edged Sword**
+   ```typescript
+   // High appetite = need more food to avoid starvation penalty
+   // Low appetite = can survive on less, but grow slower
+
+   // Already partially implemented, just needs tuning
+   ```
+
+3. **Make Reach Reduce Detection Range**
+   ```typescript
+   // Big deer (high reach) can eat large trees but are clumsy
+   const searchRadius = 0.2 * (1.5 - deer.characteristics.reach * 0.5)
+   // High reach = smaller search radius (trade-off)
+   ```
+
+**Benefits:**
+- Creates r-strategy vs K-strategy diversity
+- Fast/hungry deer vs slow/efficient deer
+- Maintains diversity naturally
+
+**Risks:**
+- Need to get trade-off balance right
+- Could make deer too weak
+
+### Option D: Terrain-Based Niches (Medium Risk, High Reward)
+
+**Problem:** Terrain exists but doesn't create strong selection
+
+**Strengthen Terrain Effects:**
+
+1. **Moisture Gradient for Trees**
+   ```typescript
+   const elevation = getElevation(ecosystem, tree.x, tree.y)
+   const moisture = 1.0 - elevation
+
+   // Trees have moisture preference based on resilience
+   const optimalMoisture = tree.characteristics.resilience
+   const moisturePenalty = Math.abs(moisture - optimalMoisture)
+   growth *= (1 - moisturePenalty * 0.6)
+   ```
+
+   Result: High-resilience trees thrive on peaks, low-resilience in valleys
+
+2. **Deer Movement Costs on Slopes**
+   ```typescript
+   // Moving uphill costs more energy
+   const elevationChange = Math.abs(newElevation - oldElevation)
+   deer.energy -= elevationChange * 0.5
+   ```
+
+   Result: Lazy deer stay in valleys, energetic deer roam peaks
+
+**Benefits:**
+- Spatial partitioning creates niches
+- Diversity maintained by geography
+- Realistic ecological mechanic
+
+**Risks:**
+- More complex interactions
+- Terrain might not vary enough currently
+
+## Recommended Approach: Staged Implementation
+
+### Phase 1: Quick Wins (Do This First)
+**Goal:** Get oscillations working with minimal changes
+
+1. Increase tree spread rate (Option A, step 1)
+2. Add crisis reproduction boost at low density (Option A, step 4)
+3. Tune deer reproduction age (Option A, step 3)
+
+**Success Criteria:**
+- Populations survive > 5000 ticks
+- See at least 2-3 oscillation cycles
+- Tree population ranges 50-500
+- Deer population ranges 5-100
+
+### Phase 2: Diversity (If Phase 1 Succeeds)
+**Goal:** Maintain genetic variation
+
+1. Implement speed energy cost (Option C, step 1)
+2. Implement terrain moisture effects (Option D, step 1)
+3. Test if deer clusters differentiate
+
+**Success Criteria:**
+- See 3 distinct deer strategies persist
+- See 3 distinct tree strategies by elevation
+- K-means clusters remain separated over time
+
+### Phase 3: Richness (Optional)
+**Goal:** Add visual/conceptual interest
+
+Only pursue if Phases 1-2 work well:
+- Add seasons (winter = harsh, summer = growth)
+- Add weather events (drought kills valley trees)
+- Consider wolves (ONLY if two-species very stable)
+
+## Alternative: Parameter Sweep
+
+Instead of manual tuning, systematically test parameter space:
+
+```python
+# Pseudo-code for automated testing
+for spread_chance in [0.10, 0.15, 0.20, 0.25]:
+    for deer_reproduce in [0.03, 0.05, 0.07, 0.10]:
+        for starvation_penalty in [0.001, 0.003, 0.005]:
+            run_simulation(5000_ticks)
+            record_stability_score()
+
+find_best_parameters()
+```
+
+**Stability Score Metrics:**
+- Population survives full duration: +10 points
+- Coefficient of variation in tree pop: target 0.3-0.7
+- Coefficient of variation in deer pop: target 0.4-0.8
+- Number of oscillation cycles: +1 point each
+- Extinction events: -20 points each
+
+## Immediate Next Steps
+
+**Recommend: Phase 1 Implementation**
+
+1. ✅ Edit model.ts constants:
+   - BASE_SPREAD_CHANCE: 0.10 → 0.20
+   - BASE_DEER_REPRODUCE_AGE: 10 → 15
+
+2. ✅ Add crisis boost in reproduction check:
+   ```typescript
+   let spreadChance = getSpreadChance(tree)
+   if (ecosystem.trees.length < 50) {
+     const boost = (50 - ecosystem.trees.length) / 50
+     spreadChance *= (1 + boost * 2)  // Up to 3x when very low
+   }
+   ```
+
+3. ✅ Run simulation for 3000 ticks at x50 speed
+
+4. ✅ Observe population graph:
+   - Do populations oscillate?
+   - What's the period?
+   - Do they stay bounded?
+
+5. If oscillations achieved → Move to Phase 2
+   If still chaotic → Try parameter sweep
+   If convergence faster → Reduce coupling further
+
+## Long-term Vision
+
+**Ideal System Characteristics:**
+- Stable oscillations with period ~200-500 ticks
+- 3-5 genetic clusters per species, each persistent
+- Spatial patterns visible (valley deer vs peak deer)
+- Resilient to perturbations (can recover from shocks)
+- Visually interesting (varied colors, movement patterns)
+
+**What Success Looks Like:**
+- User can run at x50 for 10,000 ticks without extinction
+- Population graph shows clear waves
+- Cluster overlay shows stable color bands
+- Trees show elevation-based distribution
+- Deer show behavioral variety (hunters vs grazers)
+
+## Notes on Complexity
+
+**When to Add Complexity:**
+✅ When simpler approaches exhausted
+✅ When new mechanic clearly solves identified problem
+✅ When trade-offs are well-defined
+✅ When we can test in isolation
+
+**When NOT to Add:**
+❌ As first attempt to fix instability
+❌ "Because it's cool" without clear purpose
+❌ When current mechanics not well-tuned
+❌ When we don't understand current dynamics
+
+**Current Status:**
+We're at "current mechanics not well-tuned" - should exhaust Phase 1 tuning before adding wolves, seasons, or other major features.

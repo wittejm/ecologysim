@@ -1,0 +1,204 @@
+EMERGENT EFFECTS IN TREE ECOSYSTEM SIMULATION
+==============================================
+
+This document describes how different species property values affect simulation behavior
+and emergent patterns that arise from their interactions.
+
+SPECIES PROPERTIES
+==================
+
+1. ageToSpread (integer)
+   - Age at which trees can produce offspring
+   - Lower values = faster population growth
+   - Higher values = slower colonization, more vulnerable to early crowding death
+
+2. maxSize (integer)
+   - Maximum size a tree can reach
+   - Larger = more competitive (dominates smaller neighbors in crowdedness calculations)
+   - Larger = longer time to reach maturity
+
+3. spreadChance (0.0-1.0)
+   - Probability of spreading each turn after reaching ageToSpread
+   - Higher = exponential population growth
+   - Lower = steady-state population
+
+4. spreadDistance (0.0-1.0, normalized coordinates)
+   - Maximum distance offspring can spawn from parent
+   - Higher = faster territorial expansion, less clustering
+   - Lower = tight clusters, intense local competition
+
+5. color (hex)
+   - Visual only, no gameplay effect
+
+
+EMERGENT COMPETITIVE DYNAMICS
+==============================
+
+CROWDEDNESS MECHANICS:
+- Only larger trees contribute to a smaller tree's crowdedness
+- Crowded trees (probability 1-crowdedness):
+  - Stop growing (size frozen)
+  - 10% chance of death per turn (CROWDED_DEATH_CHANCE)
+- Distance matters: closer large trees = more crowding effect
+- Size difference matters: much larger trees affect from further away
+  (maxDistance = spreadDistance * sizeDiff / maxSize)
+
+
+SPECIES ARCHETYPES & STRATEGIES
+================================
+
+FAST COLONIZER (Pine-like):
+- Low ageToSpread (3-7)
+- High spreadChance (0.15-0.25)
+- Low spreadDistance (0.05-0.15)
+- Medium maxSize (10-15)
+
+Behavior:
+- Rapidly fills empty space with dense clusters
+- Vulnerable to being outcompeted by larger species later
+- "Pioneer species" - dominates early game
+- Can maintain population through sheer numbers despite crowding losses
+
+Expected outcome:
+- Early population boom
+- Forms dense forests that prevent own growth
+- Eventually dominated by larger species in contested areas
+- Survives in isolated pockets
+
+
+SLOW GIANT (Oak-like):
+- High ageToSpread (12-20)
+- Low spreadChance (0.05-0.12)
+- High spreadDistance (0.15-0.3)
+- High maxSize (18-25)
+
+Behavior:
+- Slow to establish but devastating once mature
+- Large size creates wide "shadow" of crowding
+- Kills smaller neighbors even from distance
+- Low density allows each tree to reach full size
+
+Expected outcome:
+- Loses territory early to fast colonizers
+- Gradually reclaims space as mature trees crowd out competitors
+- Late-game dominance if survives to maturity
+- Lower total population but higher individual survival rate
+
+
+BALANCED GENERALIST (Maple-like):
+- Medium ageToSpread (8-12)
+- Medium spreadChance (0.12-0.20)
+- Medium spreadDistance (0.10-0.20)
+- Medium maxSize (12-18)
+
+Behavior:
+- Moderate expansion rate
+- Can coexist with both fast and slow species
+- Neither dominates nor gets dominated completely
+- Fills niches between clusters
+
+Expected outcome:
+- Steady population growth
+- Maintains presence throughout game
+- Forms "buffer zones" between dominant species
+- Population fluctuates with competition but rarely goes extinct
+
+
+INTER-SPECIES DYNAMICS
+=======================
+
+SUCCESSION PATTERNS:
+1. Empty space → Fast colonizer dominates (dense clusters)
+2. Fast colonizer → Self-crowding limits growth
+3. Slow giant saplings survive in crowded fast-colonizer forest
+4. Slow giants mature → Crowd out fast colonizers from distance
+5. Slow giant dominance → Spreads slowly due to low spreadChance
+6. Gaps in slow giant coverage → Fast colonizers re-establish
+7. Cycle continues with territorial ebb and flow
+
+SPATIAL PATTERNS:
+
+Clustering (low spreadDistance):
+- Dense monoculture patches
+- Sharp boundaries between species
+- High crowding death rate
+- Vulnerable to invasion at edges
+
+Dispersal (high spreadDistance):
+- Mixed species neighborhoods
+- Gradual species gradients
+- Lower crowding (trees more spread out)
+- Better at invading competitor territory
+
+EQUILIBRIUM CONDITIONS:
+Species can coexist long-term if:
+- Different size classes (large species doesn't crowd similar-sized species)
+- Different spreading rates (fast spreader maintains numbers despite crowding)
+- Spatial separation (different territories with slow mixing)
+- Temporal niches (one dominates early, other late)
+
+
+EXTREME CONFIGURATIONS
+=======================
+
+UNSTABLE (extinction risk):
+- Low spreadChance + High ageToSpread + Low maxSize
+  → Dies before reproducing, crowded out by everything
+
+- High spreadDistance + Low spreadChance
+  → Can't establish territory, offspring too dispersed
+
+DOMINANT (likely winner):
+- High spreadChance + Low ageToSpread + High maxSize
+  → Fast reproduction, early maturity, outcompetes everything
+  → May cause other species extinction
+
+STABLE COEXISTENCE:
+- Species with different maxSize tiers (e.g., 10, 15, 20)
+- Inverse relationship: faster spread = smaller size
+- Non-overlapping spreadDistance ranges
+
+
+PARAMETER TUNING GUIDELINES
+============================
+
+For competitive balance:
+- Make spreadChance inversely proportional to maxSize
+  (bigger trees should spread slower)
+
+- Make ageToSpread proportional to maxSize
+  (bigger trees take longer to mature)
+
+- Keep spreadDistance relatively similar OR make larger species spread further
+  (allows large trees to escape their crowding effect)
+
+For diverse outcomes:
+- Vary all parameters significantly between species
+- Avoid linear scaling (don't just multiply everything by 1.5)
+- Create clear strategic differences
+
+For stable coexistence:
+- Ensure each species has a condition where it outperforms others
+- Fast species: wins in empty space
+- Large species: wins in crowded conditions
+- Medium species: wins in mixed conditions
+
+
+CURRENT CONFIGURATION ANALYSIS
+================================
+
+Pine: ageToSpread=5, maxSize=15, spreadChance=0.15, spreadDistance=0.1
+Maple: ageToSpread=8, maxSize=15, spreadChance=0.25, spreadDistance=0.15
+Oak: ageToSpread=12, maxSize=20, spreadChance=0.20, spreadDistance=0.2
+
+Predicted behavior:
+- Maple dominates early (highest spreadChance + medium ageToSpread)
+- Pine struggles (same maxSize as Maple but slower spread)
+- Oak eventually dominates contested areas (only large species)
+- Maple and Oak will likely drive Pine to low populations
+- Oak's high spreadChance (0.20) for a large species may make it too strong
+
+Suggested changes for balance:
+- Increase Pine maxSize to 12 OR reduce to make it truly "pioneer"
+- Reduce Oak spreadChance to 0.08-0.12 (large trees shouldn't spread so fast)
+- Or increase Oak ageToSpread to 15-18 to delay dominance

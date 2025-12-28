@@ -1,0 +1,27 @@
+# Work Log
+
+## 12-11-25
+
+- Attempted GPU acceleration with WebGL2 Transform Feedback (broken, disabled - always returns zeros)
+- Optimized rendering: batched all trees/deer into single Graphics objects, reuse objects between frames
+- Added adaptive render loop: throttles FPS based on render time to prevent main thread blocking
+- Fixed crowdedness mechanics: death proportional to crowding level, increased crowding factor (0.35→0.6), increased death rate (0.12→0.30)
+- Added ECOSYSTEM_SCALE constant to uniformly scale all distances (spread, crowding, deer movement)
+- K-means now computes 10 clusters, displays top 3 by population
+- Deer intelligent movement: seek nearest eatable tree when hungry (energy < 1.5), otherwise random
+- Reduced deer mortality: BASE_DEER_DEATH_CHANCE (0.005→0.002), DEER_STARVATION_PENALTY (0.01→0.003)
+- Reduced BASE_DEER_MAX_EATABLE_SIZE (6→3.5) to protect larger trees from deer overpredation
+- Added profiling display: shows GPU/CPU, Update, KMeans, Render times with adaptive FPS indicator
+
+## 12-12-25 (Morning)
+
+- Refactored model.ts: created SimulationParams type, made 5 parameters runtime-configurable (baseSpreadChance, baseCrowdedDeathChance, deerReproduceChance, deerStarvationPenalty, deerReproduceAge)
+- Updated initializeEcosystem() to accept optional params, stores them in ecosystem.params
+- Fixed parameter-sweep.ts: now actually passes parameters to each simulation (was running 144 identical runs before)
+- Verified parameter system works: tested custom params override defaults correctly
+- Created playable-design.txt: interactive game features (sliders, minimap, god tools, events, challenges, genetic engineering)
+
+## 12-20-25
+
+ideas to do: 
+* increase grid density to 20x20

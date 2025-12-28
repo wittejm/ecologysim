@@ -1,0 +1,124 @@
+# Playable Design: Interactive Ecosystem Sandbox
+
+## Core Philosophy
+Let users explore, experiment, and discover emergent patterns. Balance scientific curiosity with game-like satisfying feedback.
+
+## Interactive Features
+
+### 1. Parameter Sliders (Real-time Tuning)
+- **Live sliders** for key parameters (tree spread rate, deer reproduction, starvation penalty)
+- Changes apply to NEW entities only (existing trees/deer keep their birth parameters)
+- Visual feedback: slider color changes based on current system health (green=stable, yellow=volatile, red=collapse)
+- "Presets" dropdown: Stable Oscillations, Chaos Mode, Deer Paradise, Forest Dominance
+- "Mutation Rate" slider: crank it up for rapid evolution, down for genetic stability
+- **Why fun:** Immediate cause-effect, scientific experimentation without consequences
+
+### 2. Minimap / God View
+- **Small draggable window** (150x150px) showing entire 1.0x1.0 world
+- Main view shows zoomed portion (e.g., 0.3x0.3 region)
+- Click minimap to pan main view
+- Minimap uses simplified rendering: trees as green dots, deer as brown dots, elevation as subtle gradient
+- **Toggle layers:** population density heatmap, cluster color overlay, elevation only
+- **Why fun:** Spatial awareness, discover hidden pockets of diversity, follow deer migrations
+
+### 3. Direct Interventions (God Powers)
+**Tools (selectable via toolbar):**
+- 🪓 **Axe Tool:** Click trees to instantly remove them (test recovery dynamics)
+- 🦌 **Cull Tool:** Click deer to remove (control overpopulation)
+- 🌱 **Plant Tool:** Click to add new tree at cursor (with current avg genetics OR random)
+- 🦌 **Spawn Deer:** Click to add deer (with current avg genetics OR mutant)
+- 🔥 **Fire Tool:** Drag circle, kills all trees/deer in area (test resilience)
+- 🌧️ **Flood Tool:** Temporarily boosts tree growth in selected area (lasts 100 ticks)
+- ⚡ **Lightning:** Random tree -> instant max size (create safe zones for deer)
+
+**Why fun:** Tactile, immediate, test "what if I remove this cluster?", create challenges
+
+### 4. Event System (Random Challenges)
+- **Drought** (200 ticks): Tree growth halved, deer starvation penalty doubled
+- **Plague** (deer only): 50% of deer instantly die, survivors immune (genetic bottleneck!)
+- **Meteor Strike:** Random 0.2x0.2 area cleared entirely
+- **Spring Boom:** All trees reproduce 3x for 50 ticks
+- **User can trigger events** via button panel OR they happen randomly (toggle on/off)
+- **Why fun:** Drama, recovery narratives, test system resilience
+
+### 5. Goals & Challenges (Game Mode)
+**Sandbox Mode** (current): No objectives, just explore
+**Challenge Mode:**
+- "Sustain 3 deer clusters for 2000 ticks" (diversity preservation)
+- "Survive a drought event without deer extinction"
+- "Recover from 90% tree loss to stable oscillation"
+- "Evolve a deer with speed>0.8 AND appetite<0.3" (efficiency specialist)
+- Timer, success/fail feedback, leaderboard (local browser storage)
+
+**Why fun:** Purpose, achievement, replayability
+
+### 6. Genetic Engineering (Advanced Interaction)
+- **Select tool:** Click deer/tree to see full stats in sidebar
+- **Edit mode:** Tweak selected entity's characteristics (growth, speed, etc.)
+- **Clone tool:** Click entity, then click elsewhere to place genetic copy
+- **Breed tool:** Click two deer -> spawn baby with averaged genetics + mutation
+- Limit: Max 10 manual edits per 500 ticks (prevent overpowered god mode)
+- **Why fun:** Directed evolution, test "super deer" vs normal population
+
+### 7. Time Controls (Already Useful, Could Be Better)
+- Current: Speed multiplier (x1, x10, x50)
+- **Add:** Step-forward button (advance exactly 1 tick, then pause)
+- **Add:** "Time travel" slider (scrub backward through last 1000 ticks of history)
+- **Add:** Bookmark system: save current state, reload later (test alternate futures)
+- **Why fun:** Precision control, no missing critical moments
+
+### 8. Data Overlays (Visualization Modes)
+**Toggle buttons to change what main view shows:**
+- **Normal:** Trees green, deer brown, size-based rendering (current)
+- **Genetics:** Color by cluster assignment (current K-means colors)
+- **Energy:** Trees colored by growth rate, deer by energy level (gradient)
+- **Age:** Younger = bright, older = dark (see generational turnover)
+- **Density:** Heatmap of crowding (red = crowded, blue = sparse)
+- **Elevation:** Just show terrain (debug mode)
+- **Why fun:** Different perspectives reveal hidden patterns
+
+### 9. Audio Feedback (Subtle, Optional)
+- Soft rustling when deer move near trees
+- Gentle chime when oscillation peak detected
+- Ominous tone when population drops below 10
+- Triumphant chord when challenge completed
+- **Volume slider + mute button** (accessibility)
+- **Why fun:** Emotional connection, audio cues aid monitoring
+
+### 10. Narrative Framing (Make It a Story)
+**Instead of "Ecosystem Simulation," call it:**
+- "Isle of Evolution" - You're a nature spirit managing a remote island
+- "EcoLab Alpha" - You're a scientist in a biodome testing theories
+- "Genesis Project" - Terraform a barren world into thriving ecosystem
+
+**Intro screen:**
+- Brief backstory (2-3 sentences)
+- "Your goal: Maintain balance... or break it and see what happens."
+- Tutorial popup on first load (skippable)
+
+**Why fun:** Context, feels like a game not a science project
+
+## Quick Wins (Implement First)
+1. **Parameter sliders** (high impact, moderate effort)
+2. **Axe/Cull tools** (satisfying, easy to implement)
+3. **Event triggers** (drama, moderate effort)
+4. **Minimap** (helps navigation, moderate effort)
+
+## Nice-to-Haves (Later)
+5. Genetic engineering (complex UI)
+6. Challenge mode (needs balancing)
+7. Audio (polish)
+8. Narrative framing (flavor)
+
+## Technical Notes
+- Use React state for tool selection (enum: None, Axe, Plant, etc.)
+- Mouse click handler checks current tool, applies effect
+- Events stored in ecosystem state with duration counter
+- Minimap renders to separate canvas, scaled down
+- History buffer: store last 1000 population snapshots for time-scrubbing
+
+## Success Metrics
+- **Time spent:** Users play >5 minutes (engaged)
+- **Return rate:** Users come back next day (addictive)
+- **Sharing:** Users screenshot interesting moments (social)
+- **Discovery:** Users find emergent behaviors we didn't predict (depth)
