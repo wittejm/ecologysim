@@ -27,6 +27,36 @@ import {
 } from './model/model'
 import './App.css'
 
+// Characteristic descriptions
+const TREE_DESCRIPTIONS: Record<string, string> = {
+  MaxSize: 'Maximum tree size when fully grown',
+  AgeToSpread: 'Age in ticks before tree can reproduce',
+  SpreadDistance: 'How far seeds can spread when reproducing',
+  DeathChance: 'Probability of natural death each tick',
+  SpreadChance: 'Probability of reproduction each tick (if old enough)',
+  OptimalMoisture: 'Preferred moisture level (0-1); affects growth rate',
+  CrowdingSusceptibility: 'How much crowding reduces growth and increases death'
+}
+
+const DEER_DESCRIPTIONS: Record<string, string> = {
+  MaxSize: 'Maximum deer size',
+  Speed: 'Movement distance per tick',
+  DeathChance: 'Probability of natural death each tick',
+  ReproduceChance: 'Probability of reproduction each tick (needs 1.0+ energy, costs 0.5 energy)',
+  CrowdingSusceptibility: 'How much nearby deer increase death chance',
+  MaxEatableSize: 'Maximum tree size this deer can eat',
+  EnergyNeeds: 'Energy consumed per tick'
+}
+
+const WOLF_DESCRIPTIONS: Record<string, string> = {
+  MaxSize: 'Maximum wolf size',
+  Speed: 'Movement distance per tick',
+  DeathChance: 'Probability of natural death each tick',
+  ReproduceChance: 'Probability of reproduction each tick (needs 1.0+ energy, costs 0.6 energy)',
+  CrowdingSusceptibility: 'How much nearby wolves increase death chance',
+  EnergyNeeds: 'Energy consumed per tick'
+}
+
 function App() {
   const canvasRef = useRef<HTMLDivElement>(null)
   const [isRunning, setIsRunning] = useState(false)
@@ -59,6 +89,11 @@ function App() {
   const [addDeerCount, setAddDeerCount] = useState(DEFAULT_DEER_COUNT)
   const [addWolfCount, setAddWolfCount] = useState(DEFAULT_WOLF_COUNT)
   const [pixiInitialized, setPixiInitialized] = useState(0)
+  const [treeCullPercent, setTreeCullPercent] = useState(80)
+  const [deerCullPercent, setDeerCullPercent] = useState(80)
+  const [wolfCullPercent, setWolfCullPercent] = useState(80)
+  const [immortalDeer, setImmortalDeer] = useState(true)
+  const [immortalWolf, setImmortalWolf] = useState(true)
 
   const pixiAppRef = useRef<PIXI.Application | null>(null)
   const pixiContainerRef = useRef<HTMLDivElement>(null)
@@ -162,7 +197,7 @@ function App() {
 
         // Update ecosystem
         const ecosystemStart = performance.now()
-        updateEcosystem(ecosystemRef.current)
+        updateEcosystem(ecosystemRef.current, undefined, immortalDeer, immortalWolf)
         ecosystemTime = performance.now() - ecosystemStart
 
         updateStatistics(ecosystemRef.current)
@@ -397,6 +432,67 @@ function App() {
     renderTrees(pixiAppRef.current, ecosystemRef.current)
   }
 
+  const cullTrees = () => {
+    if (!ecosystemRef.current || !pixiAppRef.current) return
+    const currentCount = ecosystemRef.current.trees.length
+    const cullCount = Math.floor((currentCount * treeCullPercent) / 100)
+
+    // Randomly select trees to remove
+    for (let i = 0; i < cullCount; i++) {
+      if (ecosystemRef.current.trees.length === 0) break
+      const randomIndex = Math.floor(Math.random() * ecosystemRef.current.trees.length)
+      const tree = ecosystemRef.current.trees[randomIndex]
+
+      // Remove from grid
+      const cellKey = getCell(tree)
+      const cell = ecosystemRef.current.grid.get(cellKey)
+      if (cell) {
+        const cellIndex = cell.findIndex((t) => t.id === tree.id)
+        if (cellIndex !== -1) {
+          cell.splice(cellIndex, 1)
+        }
+      }
+
+      // Remove from trees array
+      ecosystemRef.current.trees.splice(randomIndex, 1)
+    }
+
+    updateStatistics(ecosystemRef.current)
+    renderTrees(pixiAppRef.current, ecosystemRef.current)
+  }
+
+  const cullDeer = () => {
+    if (!ecosystemRef.current || !pixiAppRef.current) return
+    const currentCount = ecosystemRef.current.deer.length
+    const cullCount = Math.floor((currentCount * deerCullPercent) / 100)
+
+    // Randomly select deer to remove
+    for (let i = 0; i < cullCount; i++) {
+      if (ecosystemRef.current.deer.length === 0) break
+      const randomIndex = Math.floor(Math.random() * ecosystemRef.current.deer.length)
+      ecosystemRef.current.deer.splice(randomIndex, 1)
+    }
+
+    updateStatistics(ecosystemRef.current)
+    renderTrees(pixiAppRef.current, ecosystemRef.current)
+  }
+
+  const cullWolves = () => {
+    if (!ecosystemRef.current || !pixiAppRef.current) return
+    const currentCount = ecosystemRef.current.wolves.length
+    const cullCount = Math.floor((currentCount * wolfCullPercent) / 100)
+
+    // Randomly select wolves to remove
+    for (let i = 0; i < cullCount; i++) {
+      if (ecosystemRef.current.wolves.length === 0) break
+      const randomIndex = Math.floor(Math.random() * ecosystemRef.current.wolves.length)
+      ecosystemRef.current.wolves.splice(randomIndex, 1)
+    }
+
+    updateStatistics(ecosystemRef.current)
+    renderTrees(pixiAppRef.current, ecosystemRef.current)
+  }
+
   const resetEcosystem = () => {
     if (!ecosystemRef.current || !pixiAppRef.current) return
 
@@ -586,6 +682,40 @@ function App() {
           {/* Trees Section */}
           <div style={{ marginBottom: '12px' }}>
             <div style={{ fontWeight: 'bold', fontSize: '13px', marginBottom: '6px', color: '#22dd22', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', position: 'absolute', left: '0' }}>
+                <button
+                  onClick={cullTrees}
+                  style={{
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    userSelect: 'none',
+                    backgroundColor: '#444',
+                    border: '1px solid #666',
+                    borderRadius: '4px',
+                    padding: '2px 4px',
+                    lineHeight: '1'
+                  }}
+                  title="Remove % of tree population"
+                >🔥🔥🔥</button>
+                <input
+                  type="number"
+                  min="1"
+                  max="100"
+                  value={treeCullPercent}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value) || 1
+                    setTreeCullPercent(Math.max(1, Math.min(100, val)))
+                  }}
+                  style={{
+                    width: '40px',
+                    padding: '2px 4px',
+                    fontSize: '10px',
+                    fontFamily: 'monospace',
+                    textAlign: 'right'
+                  }}
+                />
+                <span style={{ fontSize: '10px' }}>%</span>
+              </div>
               <span style={{ flex: 1, textAlign: 'center' }}>TREES</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px', position: 'absolute', right: '0' }}>
                 <span
@@ -612,7 +742,7 @@ function App() {
             </div>
             {Object.keys(TREE_BOUNDS).map(key => (
               <div key={key} style={{ marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ width: '100px', fontSize: '10px' }}>{key}:</span>
+                <span style={{ width: '100px', fontSize: '10px' }} title={TREE_DESCRIPTIONS[key]}>{key}:</span>
                 <input
                   type="range"
                   min="0"
@@ -623,6 +753,7 @@ function App() {
                   style={{ flex: 1, opacity: treeRandoms[key] ? 0.3 : 1, height: '4px' }}
                   disabled={treeRandoms[key]}
                   className="compact-slider"
+                  title={`${TREE_DESCRIPTIONS[key]} (${TREE_BOUNDS[key as keyof typeof TREE_BOUNDS].min} - ${TREE_BOUNDS[key as keyof typeof TREE_BOUNDS].max})`}
                 />
                 <label style={{ cursor: 'pointer', userSelect: 'none', width: '20px', textAlign: 'center' }}>
                   <input
@@ -671,6 +802,40 @@ function App() {
           {/* Deer Section */}
           <div style={{ marginBottom: '12px' }}>
             <div style={{ fontWeight: 'bold', fontSize: '13px', marginBottom: '6px', color: '#d4a574', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', position: 'absolute', left: '0' }}>
+                <button
+                  onClick={cullDeer}
+                  style={{
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    userSelect: 'none',
+                    backgroundColor: '#444',
+                    border: '1px solid #666',
+                    borderRadius: '4px',
+                    padding: '2px 4px',
+                    lineHeight: '1'
+                  }}
+                  title="Remove % of deer population"
+                >🔥🔥🔥</button>
+                <input
+                  type="number"
+                  min="1"
+                  max="100"
+                  value={deerCullPercent}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value) || 1
+                    setDeerCullPercent(Math.max(1, Math.min(100, val)))
+                  }}
+                  style={{
+                    width: '40px',
+                    padding: '2px 4px',
+                    fontSize: '10px',
+                    fontFamily: 'monospace',
+                    textAlign: 'right'
+                  }}
+                />
+                <span style={{ fontSize: '10px' }}>%</span>
+              </div>
               <span style={{ flex: 1, textAlign: 'center' }}>DEER</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px', position: 'absolute', right: '0' }}>
                 <span
@@ -697,7 +862,7 @@ function App() {
             </div>
             {Object.keys(DEER_BOUNDS).map(key => (
               <div key={key} style={{ marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ width: '100px', fontSize: '10px' }}>{key}:</span>
+                <span style={{ width: '100px', fontSize: '10px' }} title={DEER_DESCRIPTIONS[key]}>{key}:</span>
                 <input
                   type="range"
                   min="0"
@@ -708,6 +873,7 @@ function App() {
                   style={{ flex: 1, opacity: deerRandoms[key] ? 0.3 : 1, height: '4px' }}
                   disabled={deerRandoms[key]}
                   className="compact-slider"
+                  title={`${DEER_DESCRIPTIONS[key]} (${DEER_BOUNDS[key as keyof typeof DEER_BOUNDS].min} - ${DEER_BOUNDS[key as keyof typeof DEER_BOUNDS].max})`}
                 />
                 <label style={{ cursor: 'pointer', userSelect: 'none', width: '20px', textAlign: 'center' }}>
                   <input
@@ -756,6 +922,40 @@ function App() {
           {/* Wolves Section */}
           <div style={{ marginBottom: '12px' }}>
             <div style={{ fontWeight: 'bold', fontSize: '13px', marginBottom: '6px', color: '#888', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', position: 'absolute', left: '0' }}>
+                <button
+                  onClick={cullWolves}
+                  style={{
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    userSelect: 'none',
+                    backgroundColor: '#444',
+                    border: '1px solid #666',
+                    borderRadius: '4px',
+                    padding: '2px 4px',
+                    lineHeight: '1'
+                  }}
+                  title="Remove % of wolf population"
+                >🔥🔥🔥</button>
+                <input
+                  type="number"
+                  min="1"
+                  max="100"
+                  value={wolfCullPercent}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value) || 1
+                    setWolfCullPercent(Math.max(1, Math.min(100, val)))
+                  }}
+                  style={{
+                    width: '40px',
+                    padding: '2px 4px',
+                    fontSize: '10px',
+                    fontFamily: 'monospace',
+                    textAlign: 'right'
+                  }}
+                />
+                <span style={{ fontSize: '10px' }}>%</span>
+              </div>
               <span style={{ flex: 1, textAlign: 'center' }}>WOLVES</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px', position: 'absolute', right: '0' }}>
                 <span
@@ -782,7 +982,7 @@ function App() {
             </div>
             {Object.keys(WOLF_BOUNDS).map(key => (
               <div key={key} style={{ marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ width: '100px', fontSize: '10px' }}>{key}:</span>
+                <span style={{ width: '100px', fontSize: '10px' }} title={WOLF_DESCRIPTIONS[key]}>{key}:</span>
                 <input
                   type="range"
                   min="0"
@@ -793,6 +993,7 @@ function App() {
                   style={{ flex: 1, opacity: wolfRandoms[key] ? 0.3 : 1, height: '4px' }}
                   disabled={wolfRandoms[key]}
                   className="compact-slider"
+                  title={`${WOLF_DESCRIPTIONS[key]} (${WOLF_BOUNDS[key as keyof typeof WOLF_BOUNDS].min} - ${WOLF_BOUNDS[key as keyof typeof WOLF_BOUNDS].max})`}
                 />
                 <label style={{ cursor: 'pointer', userSelect: 'none', width: '20px', textAlign: 'center' }}>
                   <input
@@ -972,6 +1173,32 @@ function App() {
         gap: '20px',
         backgroundColor: '#1a1a1a'
       }}>
+        <div style={{
+          position: 'absolute',
+          left: '10px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '4px',
+          fontSize: '11px',
+          color: 'white'
+        }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', userSelect: 'none' }}>
+            <input
+              type="checkbox"
+              checked={immortalDeer}
+              onChange={(e) => setImmortalDeer(e.target.checked)}
+            />
+            <span>1 immortal deer</span>
+          </label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', userSelect: 'none' }}>
+            <input
+              type="checkbox"
+              checked={immortalWolf}
+              onChange={(e) => setImmortalWolf(e.target.checked)}
+            />
+            <span>1 immortal wolf</span>
+          </label>
+        </div>
         <div style={{
           display: 'flex',
           flexDirection: 'column',

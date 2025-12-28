@@ -562,7 +562,7 @@ function crowdedness(tree: Tree, ecosystem: Ecosystem): number {
 }
 
 // Update ecosystem
-export function updateEcosystem(ecosystem: Ecosystem, precalculatedCrowdedness?: number[]) {
+export function updateEcosystem(ecosystem: Ecosystem, precalculatedCrowdedness?: number[], immortalDeer = true, immortalWolf = true) {
   const newTrees: Tree[] = [];
 
   // ===== TREE UPDATES =====
@@ -770,8 +770,10 @@ export function updateEcosystem(ecosystem: Ecosystem, precalculatedCrowdedness?:
       deathChance += (0.3 - deer.energy) * 0.01;
     }
 
-    // Prevent extinction: last deer never dies
-    if (ecosystem.deer.length > 1 && Math.random() < deathChance) {
+    // Prevent extinction: last deer never dies (if immortal flag is set)
+    const isLastDeer = ecosystem.deer.length === 1
+    const shouldPreventDeath = immortalDeer && isLastDeer
+    if (!shouldPreventDeath && Math.random() < deathChance) {
       return false;
     }
 
@@ -888,8 +890,10 @@ export function updateEcosystem(ecosystem: Ecosystem, precalculatedCrowdedness?:
       deathChance += (0.3 - wolf.energy) * 0.01;
     }
 
-    // Prevent extinction: last wolf never dies
-    if (ecosystem.wolves.length > 1 && Math.random() < deathChance) {
+    // Prevent extinction: last wolf never dies (if immortal flag is set)
+    const isLastWolf = ecosystem.wolves.length === 1
+    const shouldPreventWolfDeath = immortalWolf && isLastWolf
+    if (!shouldPreventWolfDeath && Math.random() < deathChance) {
       return false;
     }
 
